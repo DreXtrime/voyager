@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-dns
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.spec.project }}
+  source:
+    repoURL: https://kubernetes-sigs.github.io/external-dns/
+    chart: external-dns
+    targetRevision: 1.15.0
+    helm:
+      valuesObject:
+        nodeSelector:
+          pool: tools
+        tolerations:
+          - key: pool
+            value: tools
+            effect: NoSchedule
+        provider:
+          name: google
+        google:
+          project: tanel-test-509115
+        domainFilters:
+          - test-public.cloud.tanelneitov.eu
+        txtOwnerId: test-cluster
+        serviceAccount:
+          annotations:
+            iam.gke.io/gcp-service-account: external-dns-test@tanel-test-509115.iam.gserviceaccount.com
+  destination:
+    server: {{ .Values.spec.destination.server }}
+    namespace: external-dns
+  syncPolicy:
+    {{ toYaml .Values.spec.syncPolicy | nindent 4 }}

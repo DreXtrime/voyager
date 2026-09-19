@@ -1,0 +1,7 @@
+.DS_Store
+.idea
+commands.md
+.terraform
+*.tfstate
+*.tfstate.backup
+*.tfvars
