@@ -2,7 +2,7 @@ spec:
   destination:
     server: https://kubernetes.default.svc
   source:
-    repoURL: https://gitea.kood.tech/tanelerikneitov/voyager
+    repoURL: ssh://git@gitea.kood.tech/tanelerikneitov/voyager
     targetRevision: main
   project: default
   syncPolicy:

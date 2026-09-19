@@ -74,7 +74,7 @@ resource "google_container_cluster" "main" {
   ]
 }
 
-# Main node pool for sample application
+# Main node pool - for sample application
 resource "google_container_node_pool" "main" {
   project    = var.project_id
   name       = "main"
@@ -106,7 +106,7 @@ resource "google_container_node_pool" "main" {
   }
 }
 
-# Tools node pool for ArgoCD, External DNS, External Secrets
+# Tools node pool - for ArgoCD, External DNS, External Secrets
 resource "google_container_node_pool" "tools" {
   project    = var.project_id
   name       = "tools"
@@ -129,16 +129,10 @@ resource "google_container_node_pool" "tools" {
       pool        = "tools"
       environment = var.environment
     }
-
-    taint {
-      key    = "pool"
-      value  = "tools"
-      effect = "NO_SCHEDULE"
-    }
   }
 }
 
-# Monitoring node pool for Prometheus, Loki, Grafana
+# Monitoring node pool - for Prometheus, Loki, Grafana
 resource "google_container_node_pool" "monitoring" {
   project    = var.project_id
   name       = "monitoring"
