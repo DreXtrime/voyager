@@ -69,6 +69,14 @@ spec:
       kind: CustomResourceDefinition
       jsonPointers:
         - /status
+    - group: monitoring.coreos.com
+      kind: Prometheus
+      jsonPointers:
+        - /status/terminatingReplicas
+    - group: monitoring.coreos.com
+      kind: Alertmanager
+      jsonPointers:
+        - /status/terminatingReplicas
   syncPolicy:
     automated:
       prune: true
