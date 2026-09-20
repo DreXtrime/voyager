@@ -25,11 +25,10 @@ spec:
             replication_factor: 1
           storage:
             type: gcs
-            gcs:
-              bucketNames:
-                chunks: tanel-test-509115-logs
-                ruler: tanel-test-509115-logs
-                admin: tanel-test-509115-logs
+            bucketNames:
+              chunks: tanel-test-509115-logs
+              ruler: tanel-test-509115-logs
+              admin: tanel-test-509115-logs
           schemaConfig:
             configs:
               - from: "2024-01-01"

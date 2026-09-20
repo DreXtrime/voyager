@@ -65,4 +65,9 @@ spec:
     server: {{ .Values.spec.destination.server }}
     namespace: monitoring
   syncPolicy:
-    {{ toYaml .Values.spec.syncPolicy | nindent 4 }}
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
