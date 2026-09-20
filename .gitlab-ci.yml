@@ -71,6 +71,7 @@ build-helm-frontend:
     - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
     - gcloud auth print-access-token | helm registry login -u oauth2accesstoken --password-stdin ${REGION}-docker.pkg.dev
     - cd sample-app/frontend/helm
+    - helm package .
     - helm push *.tgz oci://${HELM_REGISTRY}
 
 # -------------------------
