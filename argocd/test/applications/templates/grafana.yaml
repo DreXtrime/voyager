@@ -45,9 +45,13 @@ spec:
                   path: /var/lib/grafana/dashboards/default
         dashboards:
           default:
+            node-exporter-full:
+              gnetId: 1860
+              revision: 37
+              datasource: Prometheus
             kubernetes-cluster:
-              gnetId: 15760
-              revision: 31
+              gnetId: 6417
+              revision: 1
               datasource: Prometheus
             postgres-overview:
               gnetId: 9628
