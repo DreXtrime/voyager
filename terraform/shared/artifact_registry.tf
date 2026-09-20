@@ -87,3 +87,25 @@ data "google_compute_default_service_account" "test" {
 data "google_compute_default_service_account" "prod" {
   project = var.prod_project_id
 }
+
+# Allow GitLab VM to push images and helm charts
+resource "google_artifact_registry_repository_iam_member" "gitlab_containers_writer" {
+  project    = var.project_id
+  location   = var.region
+  repository = google_artifact_registry_repository.containers.name
+  role       = "roles/artifactregistry.writer"
+  member     = "serviceAccount:${data.google_compute_default_service_account.shared.email}"
+}
+
+resource "google_artifact_registry_repository_iam_member" "gitlab_helm_writer" {
+  project    = var.project_id
+  location   = var.region
+  repository = google_artifact_registry_repository.helm_charts.name
+  role       = "roles/artifactregistry.writer"
+  member     = "serviceAccount:${data.google_compute_default_service_account.shared.email}"
+}
+
+# Default compute service account for shared project (GitLab VM)
+data "google_compute_default_service_account" "shared" {
+  project = var.project_id
+}

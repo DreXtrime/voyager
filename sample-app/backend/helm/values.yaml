@@ -1,0 +1,40 @@
+replicaCount: 1
+
+image:
+  repository: europe-north1-docker.pkg.dev/tanel-shared/containers/backend
+  pullPolicy: Always
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+  host: backend.test-public.cloud.tanelneitov.eu
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+nodeSelector:
+  pool: main
+
+tolerations:
+  - key: pool
+    value: main
+    effect: NoSchedule
+
+env:
+  POSTGRES_SERVER_HOST: db.test-private.cloud.tanelneitov.eu
+  POSTGRES_USER: sampleapp
+  POSTGRES_DB: sampleapp
+  CLIENT_URL: https://frontend.test-public.cloud.tanelneitov.eu
+
+dbSecretName: db-credentials

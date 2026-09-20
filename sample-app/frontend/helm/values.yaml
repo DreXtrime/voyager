@@ -1,0 +1,35 @@
+replicaCount: 1
+
+image:
+  repository: europe-north1-docker.pkg.dev/tanel-shared/containers/frontend
+  pullPolicy: Always
+  tag: "latest"
+
+service:
+  type: ClusterIP
+  port: 3000
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+  host: frontend.test-public.cloud.tanelneitov.eu
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+nodeSelector:
+  pool: main
+
+tolerations:
+  - key: pool
+    value: main
+    effect: NoSchedule
+
+# Backend API URL - used in nginx config and config.js
+backendUrl: "https://backend.test-public.cloud.tanelneitov.eu"
