@@ -28,6 +28,10 @@ spec:
                 value: monitoring
                 effect: NoSchedule
             retention: 7d
+            serviceMonitorSelectorNilUsesHelmValues: false
+            serviceMonitorSelector: {}
+            podMonitorSelectorNilUsesHelmValues: false
+            podMonitorSelector: {}
             storageSpec:
               volumeClaimTemplate:
                 spec:
