@@ -64,6 +64,7 @@ resource "google_project_iam_member" "external_secrets_secret_accessor" {
   member  = "serviceAccount:${google_service_account.external_secrets.email}"
 }
 
+# Workload Identity binding for External Secrets
 resource "google_service_account_iam_member" "external_secrets_workload_identity" {
   service_account_id = google_service_account.external_secrets.name
   role               = "roles/iam.workloadIdentityUser"
@@ -71,7 +72,7 @@ resource "google_service_account_iam_member" "external_secrets_workload_identity
 }
 
 # -------------------------
-# ArgoCD
+# ArgoCD (for pulling Helm charts from Artifact Registry)
 # -------------------------
 resource "google_service_account" "argocd" {
   project      = var.project_id
@@ -92,4 +93,13 @@ resource "google_service_account_iam_member" "argocd_workload_identity" {
   service_account_id = google_service_account.argocd.name
   role               = "roles/iam.workloadIdentityUser"
   member             = "serviceAccount:${var.project_id}.svc.id.goog[argocd/argocd-repo-server]"
+}
+
+# -------------------------
+# GitLab CI runner (shared project VM)
+# -------------------------
+resource "google_project_iam_member" "gitlab_runner_container_developer" {
+  project = var.project_id
+  role    = "roles/container.developer"
+  member  = "serviceAccount:206453655812-compute@developer.gserviceaccount.com"
 }
