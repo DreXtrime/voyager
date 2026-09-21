@@ -10,6 +10,7 @@ variables:
   TEST_CLUSTER: test-cluster
   PROD_CLUSTER: prod-cluster
   CLUSTER_ZONE: europe-north1-a
+  DOCKER_HOST: unix:///var/run/docker.sock
 
 stages:
   - test
@@ -36,8 +37,11 @@ backend-tests:
 # -------------------------
 .build-template: &build-template
   stage: build
-  image: google/cloud-sdk:latest
+  image: docker:24
   before_script:
+    - apk add --no-cache python3 py3-pip curl bash
+    - curl -sSL https://sdk.cloud.google.com | bash -s -- --disable-prompts
+    - export PATH=$PATH:/root/google-cloud-sdk/bin
     - gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
   rules:
     - if: $CI_COMMIT_BRANCH
@@ -45,6 +49,7 @@ backend-tests:
 build-backend:
   <<: *build-template
   script:
+    - export PATH=$PATH:/root/google-cloud-sdk/bin
     - docker build -t ${BACKEND_IMAGE}:${CI_COMMIT_SHA} -t ${BACKEND_IMAGE}:latest sample-app/backend/
     - docker push ${BACKEND_IMAGE}:${CI_COMMIT_SHA}
     - docker push ${BACKEND_IMAGE}:latest
@@ -52,6 +57,7 @@ build-backend:
 build-frontend:
   <<: *build-template
   script:
+    - export PATH=$PATH:/root/google-cloud-sdk/bin
     - docker build -t ${FRONTEND_IMAGE}:${CI_COMMIT_SHA} -t ${FRONTEND_IMAGE}:latest sample-app/frontend/
     - docker push ${FRONTEND_IMAGE}:${CI_COMMIT_SHA}
     - docker push ${FRONTEND_IMAGE}:latest
@@ -59,6 +65,7 @@ build-frontend:
 build-helm-backend:
   <<: *build-template
   script:
+    - export PATH=$PATH:/root/google-cloud-sdk/bin
     - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
     - gcloud auth print-access-token | helm registry login -u oauth2accesstoken --password-stdin ${REGION}-docker.pkg.dev
     - cd sample-app/backend/helm
@@ -68,6 +75,7 @@ build-helm-backend:
 build-helm-frontend:
   <<: *build-template
   script:
+    - export PATH=$PATH:/root/google-cloud-sdk/bin
     - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
     - gcloud auth print-access-token | helm registry login -u oauth2accesstoken --password-stdin ${REGION}-docker.pkg.dev
     - cd sample-app/frontend/helm
