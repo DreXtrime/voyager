@@ -32,7 +32,7 @@ resource "helm_release" "argocd" {
   name       = "argocd"
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
-  version    = "7.7.11"
+  version    = "10.9.1"
   namespace  = kubernetes_namespace.argocd.metadata[0].name
 
   values = [
@@ -47,7 +47,7 @@ resource "helm_release" "argocd" {
 
     server:
       service:
-        type: ClusterIP
+        type: LoadBalancer
 
     configs:
       params:
