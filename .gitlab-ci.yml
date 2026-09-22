@@ -90,17 +90,16 @@ deploy-test:
   image: google/cloud-sdk:latest
   before_script:
     - gcloud container clusters get-credentials ${TEST_CLUSTER} --zone=${CLUSTER_ZONE} --project=${TEST_PROJECT}
-    - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
     - curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
     - chmod +x /usr/local/bin/argocd
-    - argocd login ${ARGOCD_SERVER} --auth-token ${ARGOCD_TOKEN} --insecure
+    - argocd login ${ARGOCD_SERVER} --auth-token ${ARGOCD_TOKEN} --insecure --grpc-web
   script:
-    - argocd app set backend --helm-set image.tag=${CI_COMMIT_SHA}
-    - argocd app set frontend --helm-set image.tag=${CI_COMMIT_SHA}
-    - argocd app sync backend --force
-    - argocd app wait backend --timeout 300
-    - argocd app sync frontend --force
-    - argocd app wait frontend --timeout 300
+    - argocd app set backend --helm-set image.tag=${CI_COMMIT_SHA} --grpc-web
+    - argocd app set frontend --helm-set image.tag=${CI_COMMIT_SHA} --grpc-web
+    - argocd app sync backend --force --grpc-web
+    - argocd app wait backend --timeout 300 --grpc-web
+    - argocd app sync frontend --force --grpc-web
+    - argocd app wait frontend --timeout 300 --grpc-web
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 
@@ -112,17 +111,16 @@ deploy-prod:
   image: google/cloud-sdk:latest
   before_script:
     - gcloud container clusters get-credentials ${PROD_CLUSTER} --zone=${CLUSTER_ZONE} --project=${PROD_PROJECT}
-    - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
     - curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
     - chmod +x /usr/local/bin/argocd
-    - argocd login ${ARGOCD_SERVER_PROD} --auth-token ${ARGOCD_TOKEN_PROD} --insecure
+    - argocd login ${ARGOCD_SERVER} --auth-token ${ARGOCD_TOKEN} --insecure --grpc-web
   script:
-    - argocd app set backend --helm-set image.tag=${CI_COMMIT_SHA}
-    - argocd app set frontend --helm-set image.tag=${CI_COMMIT_SHA}
-    - argocd app sync backend --force
-    - argocd app wait backend --timeout 300
-    - argocd app sync frontend --force
-    - argocd app wait frontend --timeout 300
+    - argocd app set backend --helm-set image.tag=${CI_COMMIT_SHA} --grpc-web
+    - argocd app set frontend --helm-set image.tag=${CI_COMMIT_SHA} --grpc-web
+    - argocd app sync backend --force --grpc-web
+    - argocd app wait backend --timeout 300 --grpc-web
+    - argocd app sync frontend --force --grpc-web
+    - argocd app wait frontend --timeout 300 --grpc-web
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
   when: manual
