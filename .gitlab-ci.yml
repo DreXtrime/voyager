@@ -93,14 +93,14 @@ deploy-test:
     - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
     - curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
     - chmod +x /usr/local/bin/argocd
+    - argocd login ${ARGOCD_SERVER} --auth-token ${ARGOCD_TOKEN} --insecure
   script:
-    - export ARGOCD_CLI_ARGS="--server ${ARGOCD_SERVER} --auth-token ${ARGOCD_TOKEN} --insecure --grpc-web"
-    - argocd app set backend $ARGOCD_CLI_ARGS --helm-set image.tag=${CI_COMMIT_SHA}
-    - argocd app set frontend $ARGOCD_CLI_ARGS --helm-set image.tag=${CI_COMMIT_SHA}
-    - argocd app sync backend $ARGOCD_CLI_ARGS --force
-    - argocd app wait backend $ARGOCD_CLI_ARGS --timeout 300
-    - argocd app sync frontend $ARGOCD_CLI_ARGS --force
-    - argocd app wait frontend $ARGOCD_CLI_ARGS --timeout 300
+    - argocd app set backend --helm-set image.tag=${CI_COMMIT_SHA}
+    - argocd app set frontend --helm-set image.tag=${CI_COMMIT_SHA}
+    - argocd app sync backend --force
+    - argocd app wait backend --timeout 300
+    - argocd app sync frontend --force
+    - argocd app wait frontend --timeout 300
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 
@@ -115,14 +115,14 @@ deploy-prod:
     - curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
     - curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
     - chmod +x /usr/local/bin/argocd
+    - argocd login ${ARGOCD_SERVER_PROD} --auth-token ${ARGOCD_TOKEN_PROD} --insecure
   script:
-    - export ARGOCD_CLI_ARGS="--server ${ARGOCD_SERVER_PROD} --auth-token ${ARGOCD_TOKEN_PROD} --insecure --grpc-web"
-    - argocd app set backend $ARGOCD_CLI_ARGS --helm-set image.tag=${CI_COMMIT_SHA}
-    - argocd app set frontend $ARGOCD_CLI_ARGS --helm-set image.tag=${CI_COMMIT_SHA}
-    - argocd app sync backend $ARGOCD_CLI_ARGS --force
-    - argocd app wait backend $ARGOCD_CLI_ARGS --timeout 300
-    - argocd app sync frontend $ARGOCD_CLI_ARGS --force
-    - argocd app wait frontend $ARGOCD_CLI_ARGS --timeout 300
+    - argocd app set backend --helm-set image.tag=${CI_COMMIT_SHA}
+    - argocd app set frontend --helm-set image.tag=${CI_COMMIT_SHA}
+    - argocd app sync backend --force
+    - argocd app wait backend --timeout 300
+    - argocd app sync frontend --force
+    - argocd app wait frontend --timeout 300
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
   when: manual
