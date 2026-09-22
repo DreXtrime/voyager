@@ -41,9 +41,11 @@ func InitConfig() {
 	} else {
 		envFilePath, _ = filepath.Abs("../.env")
 	}
-	if err := godotenv.Load(envFilePath); err != nil {
-		log.WithField("reason", err.Error()).Fatal("No .env file found")
-	}
+    if _, err := os.Stat(envFilePath); err == nil {
+        if err := godotenv.Load(envFilePath); err != nil {
+            log.WithField("reason", err.Error()).Fatal("No .env file found")
+        }
+    }
 
 	required := map[string]bool{
 		POSTGRES_USER:     true,
