@@ -11,11 +11,11 @@ variables:
   PROD_CLUSTER: prod-cluster
   CLUSTER_ZONE: europe-north1-a
   DOCKER_HOST: unix:///var/run/docker.sock
-  ARGOCD_OPTS: "--server ${ARGOCD_SERVER} --insecure --auth-token ${ARGOCD_TOKEN} --plaintext"
 
 stages:
   - test
   - build
+  - update-tags
   - deploy-test
   - deploy-prod
 
@@ -84,42 +84,22 @@ build-helm-frontend:
     - helm push *.tgz oci://${HELM_REGISTRY}
 
 # -------------------------
-# Deploy to test
+# Update tags
 # -------------------------
-deploy-test:
-  stage: deploy-test
-  image: google/cloud-sdk:latest
+update-tags:
+  stage: update-tags
+  image: alpine/git
   before_script:
-    - gcloud container clusters get-credentials ${TEST_CLUSTER} --zone=${CLUSTER_ZONE} --project=${TEST_PROJECT}
-    - curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-    - chmod +x /usr/local/bin/argocd
+    - git config --global user.email "gitlab-ci@gitlab"
+    - git config --global user.name "GitLab CI"
+    - git remote set-url origin https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
   script:
-    - argocd app set argocd/backend --helm-set image.tag=${CI_COMMIT_SHA} $ARGOCD_OPTS
-    - argocd app set argocd/frontend --helm-set image.tag=${CI_COMMIT_SHA} $ARGOCD_OPTS
-    - argocd app sync argocd/backend --force $ARGOCD_OPTS
-    - argocd app wait argocd/backend --timeout 300 $ARGOCD_OPTS
-    - argocd app sync argocd/frontend --force $ARGOCD_OPTS
-    - argocd app wait argocd/frontend --timeout 300 $ARGOCD_OPTS
+    - sed -i "s/tag:.*/tag: \"$CI_COMMIT_SHA\"/" sample-app/backend/helm/values.yaml
+    - sed -i "s/tag:.*/tag: \"$CI_COMMIT_SHA\"/" sample-app/frontend/helm/values.yaml
+    - git add sample-app/backend/helm/values.yaml sample-app/frontend/helm/values.yaml
+    - git commit -m "ci: update image tags to $CI_COMMIT_SHA [skip ci]"
+    - git push origin HEAD:main
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
-
-# -------------------------
-# Deploy to prod
-# -------------------------
-deploy-prod:
-  stage: deploy-prod
-  image: google/cloud-sdk:latest
-  before_script:
-    - gcloud container clusters get-credentials ${PROD_CLUSTER} --zone=${CLUSTER_ZONE} --project=${PROD_PROJECT}
-    - curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
-    - chmod +x /usr/local/bin/argocd
-  script:
-    - argocd app set argocd/backend --helm-set image.tag=${CI_COMMIT_SHA} $ARGOCD_OPTS
-    - argocd app set argocd/frontend --helm-set image.tag=${CI_COMMIT_SHA} $ARGOCD_OPTS
-    - argocd app sync argocd/backend --force $ARGOCD_OPTS
-    - argocd app wait argocd/backend --timeout 300 $ARGOCD_OPTS
-    - argocd app sync argocd/frontend --force $ARGOCD_OPTS
-    - argocd app wait argocd/frontend --timeout 300 $ARGOCD_OPTS
-  rules:
-    - if: $CI_COMMIT_BRANCH == "main"
-  when: manual
+      changes:
+        - "sample-app/**/*"
