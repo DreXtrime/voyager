@@ -36,5 +36,6 @@ env:
   POSTGRES_USER: sampleapp
   POSTGRES_DB: sampleapp
   CLIENT_URL: https://frontend.test-public.cloud.tanelneitov.eu
+  SERVER_PORT: "8080"
 
 dbSecretName: db-credentials
