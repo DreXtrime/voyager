@@ -11,6 +11,7 @@ variables:
   PROD_CLUSTER: prod-cluster
   CLUSTER_ZONE: europe-north1-a
   DOCKER_HOST: unix:///var/run/docker.sock
+  ARGOCD_OPTS: "--server ${ARGOCD_SERVER} --insecure --auth-token ${ARGOCD_TOKEN} --plaintext"
 
 stages:
   - test
@@ -92,14 +93,13 @@ deploy-test:
     - gcloud container clusters get-credentials ${TEST_CLUSTER} --zone=${CLUSTER_ZONE} --project=${TEST_PROJECT}
     - curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
     - chmod +x /usr/local/bin/argocd
-    - argocd login ${ARGOCD_SERVER} --auth-token ${ARGOCD_TOKEN} --insecure --plaintext
   script:
-    - argocd app set backend --helm-set image.tag=${CI_COMMIT_SHA} --plaintext
-    - argocd app set frontend --helm-set image.tag=${CI_COMMIT_SHA} --plaintext
-    - argocd app sync backend --force --plaintext
-    - argocd app wait backend --timeout 300 --plaintext
-    - argocd app sync frontend --force --plaintext
-    - argocd app wait frontend --timeout 300 --plaintext
+    - argocd app set argocd/backend --helm-set image.tag=${CI_COMMIT_SHA} $ARGOCD_OPTS
+    - argocd app set argocd/frontend --helm-set image.tag=${CI_COMMIT_SHA} $ARGOCD_OPTS
+    - argocd app sync argocd/backend --force $ARGOCD_OPTS
+    - argocd app wait argocd/backend --timeout 300 $ARGOCD_OPTS
+    - argocd app sync argocd/frontend --force $ARGOCD_OPTS
+    - argocd app wait argocd/frontend --timeout 300 $ARGOCD_OPTS
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
 
@@ -113,14 +113,13 @@ deploy-prod:
     - gcloud container clusters get-credentials ${PROD_CLUSTER} --zone=${CLUSTER_ZONE} --project=${PROD_PROJECT}
     - curl -sSL -o /usr/local/bin/argocd https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
     - chmod +x /usr/local/bin/argocd
-    - argocd login ${ARGOCD_SERVER} --auth-token ${ARGOCD_TOKEN} --insecure --plaintext
   script:
-    - argocd app set backend --helm-set image.tag=${CI_COMMIT_SHA} --plaintext
-    - argocd app set frontend --helm-set image.tag=${CI_COMMIT_SHA} --plaintext
-    - argocd app sync backend --force --plaintext
-    - argocd app wait backend --timeout 300 --plaintext
-    - argocd app sync frontend --force --plaintext
-    - argocd app wait frontend --timeout 300 --plaintext
+    - argocd app set argocd/backend --helm-set image.tag=${CI_COMMIT_SHA} $ARGOCD_OPTS
+    - argocd app set argocd/frontend --helm-set image.tag=${CI_COMMIT_SHA} $ARGOCD_OPTS
+    - argocd app sync argocd/backend --force $ARGOCD_OPTS
+    - argocd app wait argocd/backend --timeout 300 $ARGOCD_OPTS
+    - argocd app sync argocd/frontend --force $ARGOCD_OPTS
+    - argocd app wait argocd/frontend --timeout 300 $ARGOCD_OPTS
   rules:
     - if: $CI_COMMIT_BRANCH == "main"
   when: manual
