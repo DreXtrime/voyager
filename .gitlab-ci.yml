@@ -88,8 +88,9 @@ build-helm-frontend:
 # -------------------------
 update-tags:
   stage: update-tags
-  image: alpine/git
+  image: alpine:latest
   before_script:
+    - apk add --no-cache git
     - git config --global user.email "gitlab-ci@gitlab"
     - git config --global user.name "GitLab CI"
     - git remote set-url origin https://oauth2:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git
