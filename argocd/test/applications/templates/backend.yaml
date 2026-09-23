@@ -3,12 +3,6 @@ kind: Application
 metadata:
   name: backend
   namespace: argocd
-  annotations:
-    argocd-image-updater.argoproj.io/image-list: backend=europe-north1-docker.pkg.dev/tanel-shared/containers/backend
-    argocd-image-updater.argoproj.io/backend.update-strategy: newest-build
-    argocd-image-updater.argoproj.io/backend.allow-tags: regexp:^[0-9a-f]{40}$
-    argocd-image-updater.argoproj.io/write-back-method: git
-    argocd-image-updater.argoproj.io/git-branch: main
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
