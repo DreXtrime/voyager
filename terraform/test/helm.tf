@@ -76,7 +76,20 @@ resource "helm_release" "argocd_image_updater" {
         - name: GCP Artifact Registry
           prefix: europe-north1-docker.pkg.dev
           api_url: https://europe-north1-docker.pkg.dev
-          credentials: gce
+          credentials: ext:/scripts/gcp-auth.sh
+          credsexpire: 1h
+
+    authScripts:
+      enabled: true
+      scripts:
+        gcp-auth.sh: |
+          #!/bin/sh
+          TOKEN=$(wget -qO- \
+            --header="Metadata-Flavor: Google" \
+            "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" \
+            | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
+
+          echo "oauth2accesstoken:$TOKEN"
     EOT
   ]
 
