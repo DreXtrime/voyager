@@ -26,9 +26,9 @@ spec:
           storage:
             type: gcs
             bucketNames:
-              chunks: tanel-test-509115-logs
-              ruler: tanel-test-509115-logs
-              admin: tanel-test-509115-logs
+              chunks: tanel-prod-logs
+              ruler: tanel-prod-logs
+              admin: tanel-prod-logs
           schemaConfig:
             configs:
               - from: "2024-01-01"
@@ -59,7 +59,7 @@ spec:
           replicas: 0
         serviceAccount:
           annotations:
-            iam.gke.io/gcp-service-account: loki-test@tanel-test-509115.iam.gserviceaccount.com
+            iam.gke.io/gcp-service-account: loki-prod@tanel-prod.iam.gserviceaccount.com
   destination:
     server: {{ .Values.spec.destination.server }}
     namespace: monitoring

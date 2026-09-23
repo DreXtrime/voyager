@@ -1,5 +1,5 @@
 apiVersion: v2
 name: applications
-description: App of Apps for test environment
+description: App of Apps for prod environment
 type: application
 version: 0.1.0

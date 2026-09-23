@@ -22,13 +22,13 @@ spec:
         provider:
           name: google
         google:
-          project: tanel-test-509115
+          project: tanel-prod
         domainFilters:
-          - test-public.cloud.tanelneitov.eu
-        txtOwnerId: test-cluster
+          - prod-public.cloud.tanelneitov.eu
+        txtOwnerId: prod-cluster
         serviceAccount:
           annotations:
-            iam.gke.io/gcp-service-account: external-dns-test@tanel-test-509115.iam.gserviceaccount.com
+            iam.gke.io/gcp-service-account: external-dns-prod@tanel-prod.iam.gserviceaccount.com
   destination:
     server: {{ .Values.spec.destination.server }}
     namespace: external-dns

@@ -21,7 +21,7 @@ spec:
             effect: NoSchedule
         config:
           datasource:
-            host: db.test-private.cloud.tanelneitov.eu
+            host: db.prod-private.cloud.tanelneitov.eu
             user: sampleapp
             passwordSecret:
               name: db-credentials

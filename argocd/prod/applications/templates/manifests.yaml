@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: {{ .Values.spec.source.repoURL }}
     targetRevision: {{ .Values.spec.source.targetRevision }}
-    path: argocd/test/manifests
+    path: argocd/prod/manifests
   destination:
     server: {{ .Values.spec.destination.server }}
     namespace: monitoring
