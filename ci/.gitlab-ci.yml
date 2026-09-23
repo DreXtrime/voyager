@@ -43,7 +43,6 @@ build-backend:
     - export PATH=$PATH:/root/google-cloud-sdk/bin
     - docker build -t ${BACKEND_IMAGE}:${CI_COMMIT_SHA} -t ${BACKEND_IMAGE}:latest sample-app/backend/
     - docker push ${BACKEND_IMAGE}:${CI_COMMIT_SHA}
-    - docker push ${BACKEND_IMAGE}:latest
 
 build-frontend:
   <<: *build-template
@@ -51,7 +50,6 @@ build-frontend:
     - export PATH=$PATH:/root/google-cloud-sdk/bin
     - docker build -t ${FRONTEND_IMAGE}:${CI_COMMIT_SHA} -t ${FRONTEND_IMAGE}:latest sample-app/frontend/
     - docker push ${FRONTEND_IMAGE}:${CI_COMMIT_SHA}
-    - docker push ${FRONTEND_IMAGE}:latest
 
 build-helm-backend:
   <<: *build-template
