@@ -61,3 +61,24 @@ resource "helm_release" "argocd" {
     kubernetes_namespace.argocd
   ]
 }
+
+# ArgoCD Image Updater
+resource "helm_release" "argocd_image_updater" {
+  name       = "argocd-image-updater"
+  repository = "https://argoproj.github.io/argo-helm"
+  chart      = "argocd-image-updater"
+  namespace  = kubernetes_namespace.argocd.metadata[0].name
+
+  values = [
+    <<-EOT
+    config:
+      registries:
+        - name: GCP Artifact Registry
+          prefix: europe-north1-docker.pkg.dev
+          api_url: https://europe-north1-docker.pkg.dev
+          credentials: gce
+    EOT
+  ]
+
+  depends_on = [helm_release.argocd]
+}
