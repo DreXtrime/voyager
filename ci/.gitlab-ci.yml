@@ -36,10 +36,6 @@ backend-tests:
   image: europe-north1-docker.pkg.dev/tanel-shared/containers/ci-tools:latest
   before_script:
     - gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      changes:
-        - sample-app/**/*
 
 build-backend:
   <<: *build-template
