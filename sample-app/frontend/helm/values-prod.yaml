@@ -1,0 +1,4 @@
+ingress:
+  host: www.cloud.tanelneitov.eu
+
+backendUrl: "https://backend.prod-public.cloud.tanelneitov.eu"
