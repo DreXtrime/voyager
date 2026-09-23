@@ -1,0 +1,6 @@
+ingress:
+  host: backend.prod-public.cloud.tanelneitov.eu
+
+env:
+  POSTGRES_SERVER_HOST: db.prod-private.cloud.tanelneitov.eu
+  CLIENT_URL: https://www.cloud.tanelneitov.eu
