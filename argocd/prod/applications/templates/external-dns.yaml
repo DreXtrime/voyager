@@ -25,6 +25,7 @@ spec:
           project: tanel-prod
         domainFilters:
           - prod-public.cloud.tanelneitov.eu
+          - cloud.tanelneitov.eu
         txtOwnerId: prod-cluster
         serviceAccount:
           annotations:
