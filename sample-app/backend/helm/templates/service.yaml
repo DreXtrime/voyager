@@ -5,6 +5,8 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}-backend
+  annotations:
+    cloud.google.com/backend-config: '{"default":"{{ .Release.Name }}-backend"}'
 spec:
   type: {{ .Values.service.type }}
   selector:
