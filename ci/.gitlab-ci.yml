@@ -27,10 +27,6 @@ backend-tests:
     - go mod tidy
     - go build ./...
     - go test ./... || true
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      changes:
-        - sample-app/backend/**/*
 
 # -------------------------
 # Build
