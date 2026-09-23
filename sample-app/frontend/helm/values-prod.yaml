@@ -1,4 +1,5 @@
 ingress:
   host: www.cloud.tanelneitov.eu
+  extraHostnames: dnstest.prod-public.cloud.tanelneitov.eu
 
 backendUrl: "https://backend.prod-public.cloud.tanelneitov.eu"

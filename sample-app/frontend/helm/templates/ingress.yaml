@@ -15,7 +15,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
   annotations:
     {{ toYaml .Values.ingress.annotations | nindent 4 }}
-    external-dns.alpha.kubernetes.io/hostname: {{ .Values.ingress.host }}
+    external-dns.alpha.kubernetes.io/hostname: {{ .Values.ingress.host }},{{ .Values.ingress.extraHostnames }}
     networking.gke.io/managed-certificates: {{ .Release.Name }}-frontend-cert
     kubernetes.io/ingress.allow-http: "false"
 spec:
