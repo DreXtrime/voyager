@@ -21,6 +21,7 @@ variables:
 stages:
   - test
   - build
+  - deploy
 
 # -------------------------
 # Test
@@ -76,3 +77,16 @@ build-helm-frontend:
     - cd sample-app/frontend/helm
     - helm package .
     - helm push *.tgz oci://${HELM_REGISTRY}
+# -------------------------
+# Deploy
+# -------------------------
+deploy-test:
+  stage: deploy
+  image: europe-north1-docker.pkg.dev/tanel-shared/containers/ci-tools:latest
+  before_script:
+    - gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
+  script:
+    - argocd login $ARGOCD_SERVER --auth-token $ARGOCD_TOKEN --insecure
+    - argocd app wait backend --health --sync --timeout 120
+  only:
+    - main
