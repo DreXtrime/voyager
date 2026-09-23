@@ -32,7 +32,7 @@ tolerations:
     effect: NoSchedule
 
 env:
-  SERVER_PORT: "8080"
+  SERVER_PORT: ":8080"
   POSTGRES_SERVER_HOST: db.test-private.cloud.tanelneitov.eu
   POSTGRES_USER: sampleapp
   POSTGRES_DB: sampleapp
