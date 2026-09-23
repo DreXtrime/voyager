@@ -12,10 +12,6 @@ spec:
           commonUpdateSettings:
             updateStrategy: "newest-build"
             allowTags: "regexp:^[0-9a-f]{40}$"
-  registryCredentials:
-    - registry: "europe-north1-docker.pkg.dev"
-      secretRef:
-        secretName: "your-existing-pull-secret-name"
   writeBackConfig:
     method: "git"
     gitConfig:
