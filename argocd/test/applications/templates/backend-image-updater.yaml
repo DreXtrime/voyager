@@ -9,6 +9,9 @@ spec:
       images:
         - alias: "backend"
           imageName: "europe-north1-docker.pkg.dev/tanel-shared/containers/backend"
+          auth:
+            secretRef:
+              secretName: "your-existing-pull-secret-name"
           commonUpdateSettings:
             updateStrategy: "newest-build"
             allowTags: "regexp:^[0-9a-f]{40}$"
