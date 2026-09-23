@@ -1,3 +1,9 @@
+workflow:
+  rules:
+    - if: '$CI_COMMIT_MESSAGE =~ /argocd-image-updater/'
+      when: never
+    - when: always
+
 variables:
   REGION: europe-north1
   SHARED_PROJECT: tanel-shared
