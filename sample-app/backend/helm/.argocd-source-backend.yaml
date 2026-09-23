@@ -1,0 +1,8 @@
+helm:
+  parameters:
+  - name: image.name
+    value: europe-north1-docker.pkg.dev/tanel-shared/containers/backend
+    forcestring: true
+  - name: image.tag
+    value: f7e092325c542842b4500f5220ed2d3a84cbd03f
+    forcestring: true
