@@ -37,6 +37,6 @@ env:
   POSTGRES_USER: sampleapp
   POSTGRES_DB: sampleapp
   CLIENT_URL: https://frontend.test-public.cloud.tanelneitov.eu
-  RUN_MIGRATION: ""
+  RUN_MIGRATION: "true"
 
 dbSecretName: db-credentials

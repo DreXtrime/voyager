@@ -34,10 +34,19 @@ spec:
               value: {{ .Values.env.POSTGRES_DB }}
             - name: CLIENT_URL
               value: {{ .Values.env.CLIENT_URL }}
+            - name: SERVER_PORT
+              value: {{ .Values.env.SERVER_PORT | quote }}
+            - name: RUN_MIGRATION
+              value: {{ .Values.env.RUN_MIGRATION | quote }}
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ .Values.dbSecretName }}
                   key: password
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.dbSecretName }}
+                  key: jwt_key
           resources:
             {{ toYaml .Values.resources | nindent 12 }}
