@@ -12,10 +12,7 @@ spec:
           commonUpdateSettings:
             updateStrategy: "newest-build"
             allowTags: "regexp:^[0-9a-f]{40}$"
-  registryCredentials:
-    - registry: "europe-north1-docker.pkg.dev"
-      auth:
-        type: "gcp"
+
   writeBackConfig:
     method: "git"
     gitConfig:
