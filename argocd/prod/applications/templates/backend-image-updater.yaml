@@ -1,0 +1,19 @@
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: backend-image-updater
+  namespace: argocd
+spec:
+  applicationRefs:
+    - namePattern: "backend"
+      images:
+        - alias: "backend"
+          imageName: "europe-north1-docker.pkg.dev/tanel-shared/containers/backend"
+          commonUpdateSettings:
+            updateStrategy: "newest-build"
+            allowTags: "regexp:^[0-9a-f]{40}$"
+
+  writeBackConfig:
+    method: "git:secret:gitlab-image-updater"
+    gitConfig:
+      branch: "main"

@@ -1,19 +1,19 @@
-# Public DNS zone for test environment
+# Public DNS zone for prod environment
 resource "google_dns_managed_zone" "public" {
   project     = var.project_id
   name        = "${var.environment}-public"
   dns_name    = "${var.environment}-public.${var.domain}."
-  description = "Public DNS zone for test environment"
+  description = "Public DNS zone for ${var.environment} environment"
 
   depends_on = [google_project_service.dns]
 }
 
-# Private DNS zone for test environment
+# Private DNS zone for prod environment
 resource "google_dns_managed_zone" "private" {
   project     = var.project_id
   name        = "${var.environment}-private"
   dns_name    = "${var.environment}-private.${var.domain}."
-  description = "Private DNS zone for test environment"
+  description = "Private DNS zone for ${var.environment} environment"
   visibility  = "private"
 
   private_visibility_config {
@@ -25,8 +25,8 @@ resource "google_dns_managed_zone" "private" {
   depends_on = [google_project_service.dns]
 }
 
-# NS records in shared project to delegate test-public zone
-resource "google_dns_record_set" "test_public_ns" {
+# NS records in shared project to delegate prod-public zone
+resource "google_dns_record_set" "env_public_ns" {
   project      = var.shared_project_id
   name         = "${var.environment}-public.${var.domain}."
   type         = "NS"

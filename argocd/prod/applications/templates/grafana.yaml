@@ -1,0 +1,66 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.spec.project }}
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: grafana
+    targetRevision: 8.8.2
+    helm:
+      valuesObject:
+        nodeSelector:
+          pool: monitoring
+        tolerations:
+          - key: pool
+            value: monitoring
+            effect: NoSchedule
+        adminPassword: admin
+        datasources:
+          datasources.yaml:
+            apiVersion: 1
+            datasources:
+              - name: Prometheus
+                type: prometheus
+                url: http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090
+                isDefault: true
+              - name: Loki
+                type: loki
+                url: http://loki.monitoring.svc.cluster.local:3100
+        dashboardProviders:
+          dashboardproviders.yaml:
+            apiVersion: 1
+            providers:
+              - name: default
+                orgId: 1
+                folder: ""
+                type: file
+                disableDeletion: false
+                editable: true
+                options:
+                  path: /var/lib/grafana/dashboards/default
+        dashboards:
+          default:
+            node-exporter-full:
+              gnetId: 1860
+              revision: 37
+              datasource: Prometheus
+            kubernetes-cluster:
+              gnetId: 6417
+              revision: 1
+              datasource: Prometheus
+            postgres-overview:
+              gnetId: 9628
+              revision: 7
+              datasource: Prometheus
+        service:
+          type: ClusterIP
+  destination:
+    server: {{ .Values.spec.destination.server }}
+    namespace: monitoring
+  syncPolicy:
+    {{ toYaml .Values.spec.syncPolicy | nindent 4 }}

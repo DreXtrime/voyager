@@ -1,0 +1,37 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgres-exporter
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.spec.project }}
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: prometheus-postgres-exporter
+    targetRevision: 6.3.0
+    helm:
+      valuesObject:
+        nodeSelector:
+          pool: monitoring
+        tolerations:
+          - key: pool
+            value: monitoring
+            effect: NoSchedule
+        config:
+          datasource:
+            host: db.test-private.cloud.tanelneitov.eu
+            user: sampleapp
+            passwordSecret:
+              name: db-credentials
+              key: password
+            database: sampleapp
+            sslmode: disable
+        serviceMonitor:
+          enabled: true
+  destination:
+    server: {{ .Values.spec.destination.server }}
+    namespace: monitoring
+  syncPolicy:
+    {{ toYaml .Values.spec.syncPolicy | nindent 4 }}
