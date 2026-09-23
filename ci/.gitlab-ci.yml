@@ -85,7 +85,7 @@ deploy-test:
   before_script:
     - gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
   script:
-    - argocd login $ARGOCD_SERVER --auth-token $ARGOCD_TOKEN --insecure
-    - argocd app wait backend --health --sync --timeout 120
+    - argocd login $ARGOCD_SERVER --username $ARGOCD_USER --password $ARGOCD_PASSWORD --insecure --grpc-web --yes
+    - argocd app wait backend --health --timeout 120
   only:
     - main
