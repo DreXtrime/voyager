@@ -77,7 +77,7 @@ build-helm-frontend:
     - helm package .
     - helm push *.tgz oci://${HELM_REGISTRY}
 # -------------------------
-# Deploy
+# Deploy - test
 # -------------------------
 deploy-test:
   stage: deploy
@@ -89,3 +89,19 @@ deploy-test:
     - argocd app wait backend --health --timeout 120
   only:
     - main
+# -------------------------
+# Deploy - prod
+# -------------------------
+deploy-prod:
+  stage: deploy
+  image: europe-north1-docker.pkg.dev/tanel-shared/containers/ci-tools:latest
+  before_script:
+    - gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet
+  script:
+    - echo y | argocd login $PROD_ARGOCD_SERVER --username admin --password $ARGOCD_PASSWORD --insecure --grpc-web
+    - argocd app wait backend --health --timeout 120
+  when: manual
+  only:
+    - main
+  needs:
+    - deploy-test
