@@ -71,27 +71,54 @@ resource "helm_release" "argocd_image_updater" {
 
   values = [
     <<-EOT
+    serviceAccount:
+      annotations:
+        iam.gke.io/gcp-service-account: ${google_service_account.image_updater.email}
+
     config:
       registries:
         - name: GCP Artifact Registry
           prefix: europe-north1-docker.pkg.dev
           api_url: https://europe-north1-docker.pkg.dev
-          credentials: ext:/scripts/gcp-auth.sh
+          credentials: ext:/auth/auth.sh
           credsexpire: 1h
 
-    authScripts:
-      enabled: true
-      scripts:
-        gcp-auth.sh: |
-          #!/bin/sh
-          TOKEN=$(wget -qO- \
-            --header="Metadata-Flavor: Google" \
-            "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" \
-            | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
+    volumes:
+      - name: auth
+        configMap:
+          name: image-updater-auth
+          defaultMode: 0755
 
-          echo "oauth2accesstoken:$TOKEN"
+    volumeMounts:
+      - name: auth
+        mountPath: /auth
+        readOnly: true
     EOT
   ]
 
-  depends_on = [helm_release.argocd]
+  depends_on = [
+    helm_release.argocd,
+    kubernetes_config_map.image_updater_auth,
+    google_service_account_iam_member.image_updater_workload_identity,
+    google_artifact_registry_repository_iam_member.image_updater_reader
+  ]
+}
+
+resource "kubernetes_config_map" "image_updater_auth" {
+  metadata {
+    name      = "image-updater-auth"
+    namespace = "argocd"
+  }
+
+  data = {
+    "auth.sh" = <<-SCRIPT
+      #!/bin/sh
+      TOKEN=$(wget -qO- \
+        --header="Metadata-Flavor: Google" \
+        "http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token" \
+        | sed -n 's/.*"access_token":"\([^"]*\)".*/\1/p')
+
+      echo "oauth2accesstoken:$TOKEN"
+    SCRIPT
+  }
 }

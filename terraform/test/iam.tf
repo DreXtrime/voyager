@@ -103,3 +103,25 @@ resource "google_project_iam_member" "gitlab_runner_container_developer" {
   role    = "roles/container.developer"
   member  = "serviceAccount:206453655812-compute@developer.gserviceaccount.com"
 }
+
+# Image updater
+
+resource "google_service_account" "image_updater" {
+  project      = var.project_id
+  account_id   = "image-updater-${var.environment}"
+  display_name = "Argo CD Image Updater - ${var.environment}"
+}
+
+resource "google_artifact_registry_repository_iam_member" "image_updater_reader" {
+  project    = var.shared_project_id
+  location   = var.region
+  repository = "containers"
+  role       = "roles/artifactregistry.reader"
+  member     = "serviceAccount:${google_service_account.image_updater.email}"
+}
+
+resource "google_service_account_iam_member" "image_updater_workload_identity" {
+  service_account_id = google_service_account.image_updater.name
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "serviceAccount:${var.project_id}.svc.id.goog[argocd/argocd-image-updater]"
+}

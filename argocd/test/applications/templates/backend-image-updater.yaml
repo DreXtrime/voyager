@@ -14,6 +14,6 @@ spec:
             allowTags: "regexp:^[0-9a-f]{40}$"
 
   writeBackConfig:
-    method: "git"
+    method: "git:secret:gitlab-image-updater"
     gitConfig:
       branch: "main"
