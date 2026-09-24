@@ -46,15 +46,12 @@ resource "helm_release" "argocd" {
           effect: NoSchedule
 
     server:
-      service:
-        type: ClusterIP
       ingress:
         enabled: true
+        ingressClassName: "gce-internal"
         annotations:
-          kubernetes.io/ingress.class: "gce-internal"
           external-dns.alpha.kubernetes.io/hostname: argocd.prod-private.cloud.tanelneitov.eu
-        hosts:
-          - argocd.prod-private.cloud.tanelneitov.eu
+        hostname: argocd.prod-private.cloud.tanelneitov.eu
 
     configs:
       params:
