@@ -13,6 +13,14 @@ spec:
     targetRevision: 8.8.2
     helm:
       valuesObject:
+        ingress:
+          enabled: true
+          annotations:
+            kubernetes.io/ingress.class: "gce-internal"
+            external-dns.alpha.kubernetes.io/hostname: grafana.prod-private.cloud.tanelneitov.eu
+          hosts:
+            - grafana.prod-private.cloud.tanelneitov.eu
+          path: /
         nodeSelector:
           pool: monitoring
         tolerations:

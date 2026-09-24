@@ -47,12 +47,18 @@ resource "helm_release" "argocd" {
 
     server:
       service:
-        type: LoadBalancer
+        type: ClusterIP
+      ingress:
+        enabled: true
+        annotations:
+          kubernetes.io/ingress.class: "gce-internal"
+          external-dns.alpha.kubernetes.io/hostname: argocd.prod-private.cloud.tanelneitov.eu
+        hosts:
+          - argocd.prod-private.cloud.tanelneitov.eu
 
     configs:
       params:
         server.insecure: true
-
     EOT
   ]
 
