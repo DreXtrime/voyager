@@ -189,6 +189,7 @@ argocd app rollback frontend <revision>
 - Self-managed GitLab CE running on a GCE instance in the shared project, accessible at
   `https://gitlab.cloud.tanelneitov.eu`
 - WireGuard VPN for private access to internal resources in test and prod
+- Optimized docker test image for running tests much faster, published to container registry
 - ArgoCD Image updater, keeping applications up to date based on tags in the container registry
 - Multi-AZ database, kept in multiple GCP datacenters to redundancy in prod environment
 - Private DNS, with a vpn connection you can access any private applications in the VPC network
