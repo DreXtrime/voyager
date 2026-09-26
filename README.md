@@ -1,195 +1,104 @@
 # Voyager
 
-> This repository is configured as an educational project.
->
-> **Don't attempt to clone and deploy this cluster manually unless you know what you are doing.**
+A cloud infrastructure project deploying a full-stack web application to Google Cloud Platform using modern DevOps
+tooling. Built as a learning project to get hands-on experience with the kind of infrastructure that real production
+environments use. The free credit offering from GCP was used for deployment.
 
+The app itself is simple on purpose: a React frontend, Go backend, and PostgreSQL database where users can register and
+log in. The point is not the app. The point is everything around it.
 
-Cloud migration project deploying a sample application to Google Cloud Platform using Kubernetes, Terraform, GitLab CI
-and ArgoCD.
+---
+## What this project covers
 
-The sample app is a React frontend, Go backend and PostgreSQL database. It runs in two environments: test and prod,
-managed from a single monorepo.
+The infrastructure is split across three GCP projects: one shared environment for things like the container registry and
+a self-hosted GitLab instance, and separate test and prod environments each with their own network, Kubernetes cluster,
+and database. Both environments are brought up with Terraform and managed from a single monorepo.
 
-Here is a useful introductory video of what is [GitOps](https://youtu.be/GlG6Xr2HH1g?si=OUP8gvptOmqTS5A1&t=40)? 
+Code changes flow through a GitLab CI pipeline that runs tests, builds Docker images, packages Helm charts, and deploys
+to test automatically. Prod requires a manual approval step. Once deployed, ArgoCD takes over and keeps the cluster in
+sync with whatever is in the repo. If something drifts, ArgoCD gets it back in sync.
+
+Secrets never touch the repo or the CI environment as plaintext. Terraform generates database passwords, stores them in
+GCP Secret Manager, and a External Secrets tool pulls them into Kubernetes at runtime. The database itself has no
+public IP and is only reachable from inside the VPC.
+
+Each environment also runs a monitoring stack: Prometheus scrapes metrics, Loki collects logs via Grafana Alloy, and
+Grafana puts it all on dashboards. Alerts go to Discord. A WireGuard VPN on a small GCE instance (which is in the free
+tier and allows me to avoid GCP VPN fees) gives private access to
+internal services like Grafana without exposing them to the internet.
+
+DNS records are managed automatically by External DNS, which watches for Kubernetes ingress resources and creates the
+corresponding Cloud DNS entries. TLS is handled by GCP managed certificates.
 
 ---
 
-## Architecture
+## Things I ran into
 
+Setting up Workload Identity was one of the trickier parts. In GCP, the recommended way for a Kubernetes pod to
+authenticate to GCP services (like Secret Manager or Cloud Storage) is through Workload Identity, which links a
+Kubernetes service account to a GCP service account without needing to mount any key files. This proved to be one of the
+more trickier parts of earlier iterations.
+
+The app-of-apps pattern in ArgoCD made sense on paper but the sync ordering bit me pretty hard early on. External
+Secrets has to be fully running before any app that pulls secrets from it, otherwise those apps just fail on startup and
+ArgoCD keeps retrying them.
+
+The private GKE cluster setup caused some early issues too. Private nodes have no public IPs, so pulling images or
+reaching external services requires a Cloud NAT gateway. Forgetting to provision that correctly meant pods would get
+stuck waiting for images that could never be pulled.
+
+Running a self-managed GitLab instance on a GCE instance in the shared project ended up being more useful than I
+expected. Having the runner sitting inside the same network as everything else meant it could talk directly to the
+cluster and the artifact registry without jumping through (too many) hoops. The GitLab CI format also just clicked for
+me faster than GitHub Actions did. Although future updates have to be handled by me now too, which it already started 
+pinging me about every time I opened it.
+
+---
+## Potential improvements
+- The test and prod Terraform is basically copy-pasted, should be a shared module in a real setup with the config seperating them
+- Single node WireGuard VPN is a single point of failure for private access
+- The GitLab instance is a single GCE instance with no backup or HA, if it goes down the whole CI pipeline is dead
+
+---
 ![GitopsCartographer_diagram1.drawio.svg](images/GitopsCartographer_diagram1.drawio.svg)
----
-
-## What's in this repo
-
-```
-argocd/        ArgoCD app-of-apps definitions for test and prod
-sample-app/    Frontend and backend source code and Helm charts
-terraform/     Infrastructure as code for shared, test and prod environments
-ci/            Dockerfile used in the GitLab CI pipeline
-```
 
 ---
-
-## Infrastructure overview
-
-Everything runs on GCP. The three GCP projects are:
-
-- `tanel-shared` - shared resources: Artifact Registry, GitLab instance
-- `tanel-test` - test environment
-- `tanel-prod` - prod environment
-
-Each environment has its own VPC, GKE cluster, Cloud SQL PostgreSQL database and DNS zones.
-
-The GKE clusters use three node pools: `main` for the sample app, `monitoring` for Prometheus/Loki/Grafana and `tools`
-for ArgoCD/External DNS/External Secrets.
-
----
-
-## Domains
-
-| URL                                               | What                |
-|---------------------------------------------------|---------------------|
-| https://www.cloud.tanelneitov.eu                  | Production frontend |
-| https://backend.prod-public.cloud.tanelneitov.eu  | Production backend  |
-| https://gitlab.cloud.tanelneitov.eu               | Self-managed GitLab |
-| https://frontend.test-public.cloud.tanelneitov.eu | Test frontend       |
-| https://backend.test-public.cloud.tanelneitov.eu  | Test backend        |
-
----
-
 ## Stack
 
-| Layer              | Tool                                  |
-|--------------------|---------------------------------------|
-| Infrastructure     | Terraform                             |
-| Container registry | GCP Artifact Registry                 |
-| Kubernetes         | GKE Standard                          |
-| GitOps             | ArgoCD                                |
-| CI/CD              | GitLab CI                             |
-| DNS                | GCP Cloud DNS + External DNS          |
-| TLS                | GCP Managed Certificates              |
-| Secrets            | GCP Secret Manager + External Secrets |
-| Logs               | Loki + Grafana Alloy                  |
-| Dashboards         | Grafana                               |
-| Database           | Cloud SQL PostgreSQL                  |
-| VPN                | WireGuard on GCE                      |
+| Area                   | Tool                                           |
+|------------------------|------------------------------------------------|
+| Cloud                  | Google Cloud Platform                          |
+| Infrastructure as code | Terraform                                      |
+| Kubernetes             | GKE Standard                                   |
+| GitOps                 | ArgoCD                                         |
+| CI/CD                  | GitLab CI                                      |
+| Container registry     | GCP Artifact Registry                          |
+| Secrets                | GCP Secret Manager + External Secrets Operator |
+| DNS                    | GCP Cloud DNS + External DNS                   |
+| TLS                    | GCP Managed Certificates                       |
+| Logs                   | Loki + Grafana Alloy                           |
+| Metrics                | Prometheus                                     |
+| Dashboards             | Grafana                                        |
+| Database               | Cloud SQL PostgreSQL 15                        |
+| VPN                    | WireGuard on GCE                               |
+| Backend                | Go (Fiber)                                     |
+| Frontend               | React                                          |
 
 ---
 
-## Setup
+## Repository layout
 
-### Prerequisites
-
-- GCP organization with three projects: shared, test, prod
-- Domain registered and root zone configured in shared project
-- Terraform state buckets created in each project
-- Admin user created with appropriate IAM roles, MFA enabled
-
-### 1. Shared infrastructure
-
-```bash
-cd terraform/shared
-terraform init
-terraform apply
 ```
-
-Creates Artifact Registry repositories and the self-managed GitLab instance.
-
-### 2. Test and prod infrastructure
-
-```bash
-cd terraform/test
-terraform init
-terraform apply
-
-cd terraform/prod
-terraform init
-terraform apply
-```
-
-Each creates a VPC, GKE cluster with three node pools, Cloud SQL database, DNS zones, NAT gateway and WireGuard VPN.
-
-### 3. ArgoCD
-
-ArgoCD is the only tool installed via Terraform Helm provider. Everything else is managed by ArgoCD itself using the
-app-of-apps pattern.
-
-```bash
-# ArgoCD is installed as part of terraform apply via helm.tf
-# After apply, get the initial password and log in
-kubectl get secret argocd-initial-admin-secret -n argocd -o jsonpath='{.data.password}' | base64 -d
-```
-
-Then apply the root app-of-apps for the environment. ArgoCD will install everything else: External Secrets, External
-DNS, Prometheus, Loki, Grafana, Alloy and the sample app.
-
-### 4. CI/CD
-
-The GitLab CI pipeline is configured in `.gitlab-ci.yml`. On every push to main it:
-
-1. Runs backend tests
-2. Builds and pushes Docker images to Artifact Registry
-3. Builds and pushes Helm charts to Artifact Registry (OCI)
-4. Deploys automatically to test via ArgoCD
-5. Waits for manual approval before deploying to prod
-
-A GitLab CI token for ArgoCD is stored as a CI/CD variable in GitLab.
-
----
-
-## Monitoring
-
-Grafana is available via port-forward or VPN at the internal DNS address.
-
-```bash
-kubectl port-forward svc/grafana 3000:80 -n monitoring
-```
-
-Dashboards included:
-
-- Kubernetes cluster metrics
-- PostgreSQL database metrics
-- Sample application logs via Loki
-- GCP cloud metrics
-
-Prometheus alerts are configured and send notifications to Discord.
-
----
-
-## VPN
-
-A WireGuard VPN server runs on a GCE instance in each environment. Connect to it to access private DNS zones and
-internal services.
-
-The VPN server IP is output by Terraform:
-
-```bash
-cd terraform/prod
-terraform output vpn_ip
-```
-
-Configure a WireGuard client with the server public key and the `10.200.0.0/24` subnet routed through the tunnel.
-
----
-
-## Rollback
-
-To roll back the sample app to a previous version, trigger the rollback pipeline in GitLab or use ArgoCD directly:
-
-```bash
-argocd app history frontend
-argocd app rollback frontend <revision>
+argocd/        ArgoCD app-of-apps definitions for test and prod environments
+terraform/     Infrastructure as code (shared, test, prod)
+sample-app/    Frontend and backend source code with Helm charts
+ci/            GitLab CI pipeline configuration and CI Docker image
+images/        Architecture diagrams
 ```
 
 ---
 
-## Extras
+## Related
 
-- Self-managed GitLab CE running on a GCE instance in the shared project, accessible at
-  `https://gitlab.cloud.tanelneitov.eu`
-- WireGuard VPN for private access to internal resources in test and prod
-- Optimized docker test image for running tests much faster, published to container registry
-- ArgoCD Image updater, keeping applications up to date based on tags in the container registry
-- Multi-AZ database, kept in multiple GCP datacenters to redundancy in prod environment
-- Private DNS, with a vpn connection you can access any private applications in the VPC network
+I also did a separate cost analysis [here](https://github.com/drextrime/Cloud-cartographer), where I compared what this setup would cost on AWS versus GCP, looking at equivalent
+services on both providers and where the pricing differences actually come from. 
